@@ -3,12 +3,11 @@
 # Press Maj+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from random import *
-import numpy as np
 import cv2
 import math
 import gini_entropy
 
-im_gray = cv2.imread("sources/butterfly.jpg", cv2.IMREAD_GRAYSCALE)
+im_gray = cv2.imread("sources/Cameraman256.png", cv2.IMREAD_GRAYSCALE)
 
 imageTest = [[122, 233, 213], [112, 33, 32], [13, 41, 24]]
 matrix1 = [[7, 8, 9], [4, 5, 6], [1, 2, 3]]
@@ -20,7 +19,8 @@ colors += [[255, 0, 0]]  # blue
 colors += [[0, 255, 0]]  # green
 colors += [[0, 255, 255]]  # yellow
 colors += [[0, 128, 255]]  # orange
-colors += [[255,149,0]]
+colors += [[255, 149, 0]]
+colors += [[65, 149, 33]]
 
 
 def draw_image(image, tab):
@@ -28,11 +28,10 @@ def draw_image(image, tab):
     nb_col = len(image[0])
     colored_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     for k in range(1, len(tab)):
-        for i in range(len(image)):
-            for j in range(len(image[0])):
+        for i in range(nb_lines):
+            for j in range(nb_col):
                 if tab[k - 1] < image[i][j] <= tab[k]:
                     colored_image[i][j] = colors[k]
-    new_image = np.array(colored_image)
     cv2.imshow("image segmentée tata !", colored_image)
     cv2.waitKey()
 
@@ -62,6 +61,7 @@ def pso(image, nb_region):
     # initialisation of matrix positions and velocity (search space)
     gray_max = 0
     gray_min = 255
+    # looking for the border values gray_max and gray_min
     for i in range(len(image)):
         for j in range(len(image[0])):
             if image[i][j] > gray_max:
@@ -69,20 +69,21 @@ def pso(image, nb_region):
             if image[i][j] < gray_min:
                 gray_min = image[i][j]
 
-    position_tab = [[randint(gray_min, gray_max) for i in range(nb_seuil)] for j in range(50)]
-    best_position_tab = []
+    # initialisation the positions tab with random values between gray_min and gray_max
+    position_tab = [[float(randint(gray_min, gray_max)) for i in range(nb_seuil)] for j in range(50)]
+    # initialisation velocity tab with zeros
     velocity_tab = [[0.0 for i in range(nb_seuil)] for j in range(50)]
-    g_best_tab = []
+    best_position_tab = []
+    # initialising best position tab with position tab values
     for element in position_tab:
         best_position_tab += [element]
-        g_best_tab += [element]
 
     # initialisation ended
 
     # define an shortcut for gini_entropy
     def ge(pixel_tab):
         return gini_entropy.gini_entropy(image, pixel_tab, gray_min, gray_max)
-
+    """
     # function that finds the best position in the whole swarm
     def g_best_finder(ptab, indice):
         neighbours = []
@@ -96,19 +97,17 @@ def pso(image, nb_region):
             if ge(gbest) < ge(element):
                 gbest = element
         return el
-
-    # find the g best initation
-    g_best = best_position_tab[0]
-    for i in range(1, len(best_position_tab)):
-        if ge(best_position_tab[i]) < ge(g_best):
-            g_best = best_position_tab[i]
+    """
     # algorithm  iterations:
-
+    g_best = position_tab[0]
+    for i in range(1,len(position_tab)):
+        if position_tab[i] < g_best:
+            g_best = position_tab[i]
     k = 0  # iteration init on 0
     psnr_value = 0
 
     # do until psnr index is above 30db or we did a lot of iteration to avoid infinity loop
-    for k in range(5):
+    for k in range(10):
         # psnr_value = psnr(image, best_position_tab)
         for i in range(nb_col):
             #  g_best_tab[i] = g_best_finder(position_tab, i)  # find g_best around the particle i,j
@@ -149,7 +148,7 @@ def pso(image, nb_region):
             if ge(position_tab[i]) < ge(best_position_tab[i]):
                 best_position_tab[i] = position_tab[i]
                 # update the new g_best position if the personal best position is better than g_best
-                if ge(best_position_tab[i]) < ge(g_best_tab[i]):
+                if ge(best_position_tab[i]) < ge(g_best):
                     g_best = best_position_tab[i]
 
         print(k)
@@ -166,5 +165,5 @@ def pso(image, nb_region):
     # cv2.waitKey()
 
 
-pso(im_gray, 4)
+pso(im_gray, 5)
 

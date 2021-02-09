@@ -38,7 +38,7 @@ class Region:
         return self.f_cum
     """
 
-    # centre calculation
+    # gray cumulative percent calculation by adding the value before as an argument
     def gray_percent_cum_cal(self, gray_cum_before):
         self.gray_percent_cum = gray_cum_before + self.gray_percent
         return self.gray_percent_cum
@@ -83,14 +83,16 @@ class Image:
             #  f_before = self.regions[i].f_cum_cal(f_before)
 
         for i in range(len(self.regions)):
-            self.entropy += self.regions[i].f * math.log10(self.regions[i].f)
-            self.regions[i].gray_percent = (self.regions[i].n * self.regions[i].centre) / total_gray
+            self.entropy += self.regions[i].f * math.log10(self.regions[i].f)  # entropy index using p = f
+            self.regions[i].gray_percent = (self.regions[i].n * self.regions[i].centre) / total_gray  # gray percent
             g2_before = self.regions[i].gray_percent_cum_cal(g_before)
-            gini += self.regions[i].f * (g_before + self.regions[i].gray_percent_cum)
+            gini += self.regions[i].f * (g_before + self.regions[i].gray_percent_cum)  # gini calculation
             g_before = g2_before
         self.gini = 1 - gini
 
 
+# definition of the fitness function
 def gini_entropy(image_test, tab_pixel, min_gray, max_gray):
+    # initialisation an image object with the image matrix and particle and the gray botder
     img1 = Image(image_test, tab_pixel, min_gray, max_gray)
     return img1.gini - img1.entropy
