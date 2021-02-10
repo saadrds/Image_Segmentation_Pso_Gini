@@ -8,16 +8,14 @@ class Region:
     centre: float  # centre of region
     gray_percent: float  # gray percent of region
     gray_percent_cum: float  # cumulate of gray centre in region
-    l1: float  # min limit
-    l2: float  # max limit
-    width: float
+    l1: int  # min limit
+    l2: int  # max limit
     pixel_tab: []
 
     # constructor with the region limits
     def __init__(self, l1, l2):
-        self.l1 = l1
-        self.l2 = l2
-        self.width = l1 + l2
+        self.l1 = int(l1)
+        self.l2 = int(l2)
         self.pixel_tab = [l1]
         self.pixel_tab += [l2]
 
@@ -29,7 +27,7 @@ class Region:
         self.n = len(self.pixel_tab)
         self.pixel_tab = self.pixel_tab
         self.f = self.n / total_pixels
-        self.centre = self.width / self.n
+        self.centre = (self.l1 + self.l2) / self.n
 
     # f_cum calculation
     """
@@ -61,7 +59,7 @@ class Image:
         self.regions = [Region(min_gray, seuils[0])]
         for i in range(len(seuils) - 1):
             self.regions += [Region(seuils[i], seuils[i + 1])]
-        self.regions += [Region(seuils[len(seuils) - 1], self.max)]
+        self.regions += [Region(seuils[len(seuils) - 1], max_gray)]
         #  grouping pixels of image in propre regions
         for i in range(self.nb_lines):
             for j in range(self.nb_columns):
@@ -96,3 +94,4 @@ def gini_entropy(image_test, tab_pixel, min_gray, max_gray):
     # initialisation an image object with the image matrix and particle and the gray botder
     img1 = Image(image_test, tab_pixel, min_gray, max_gray)
     return img1.gini - img1.entropy
+

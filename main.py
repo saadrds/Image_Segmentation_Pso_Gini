@@ -3,24 +3,27 @@
 # Press Maj+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from random import *
+import time
 import cv2
 import math
 import gini_entropy
 
-im_gray = cv2.imread("sources/Cameraman256.png", cv2.IMREAD_GRAYSCALE)
+im_gray = cv2.imread("sources/brain.png", cv2.IMREAD_GRAYSCALE)
 
 imageTest = [[122, 233, 213], [112, 33, 32], [13, 41, 24]]
 matrix1 = [[7, 8, 9], [4, 5, 6], [1, 2, 3]]
 imageTest2 = [[121, 232, 223], [112, 13, 32], [33, 42, 64]]
 
 colors = []
-colors += [[0, 0, 255]]  # red
-colors += [[255, 0, 0]]  # blue
-colors += [[0, 255, 0]]  # green
-colors += [[0, 255, 255]]  # yellow
 colors += [[0, 128, 255]]  # orange
+colors += [[0, 255, 255]]  # yellow
+colors += [[0, 255, 0]]  # green
+colors += [[255, 0, 0]]  # blue
+colors += [[0, 0, 255]]  # red
 colors += [[255, 149, 0]]
 colors += [[65, 149, 33]]
+colors += [[255, 228, 196]]
+colors += [[201, 85, 0]]
 
 
 def draw_image(image, tab):
@@ -30,10 +33,18 @@ def draw_image(image, tab):
     for k in range(1, len(tab)):
         for i in range(nb_lines):
             for j in range(nb_col):
-                if tab[k - 1] < image[i][j] <= tab[k]:
+                if tab[k - 1] <= image[i][j] <= tab[k]:
                     colored_image[i][j] = colors[k]
     cv2.imshow("image segmentée tata !", colored_image)
+    cv2.imwrite("sources/brain4.png", colored_image)
     cv2.waitKey()
+
+
+def initialise_position(length, min_value, max_value):
+    position = [min_value, max_value]
+    for i in range(length - 2):
+        position.insert(1, float(randint(min_value, int(position[1]))))
+    return position
 
 
 # psnr function (peak signal to noise ratio)
@@ -51,6 +62,7 @@ def psnr(initial_image, end_image):
 
 
 def pso(image, nb_region):
+    start_time = time.time()
     # variables and parameters initialisations
     nb_seuil = nb_region - 1
     nb_col = 50
@@ -70,7 +82,7 @@ def pso(image, nb_region):
                 gray_min = image[i][j]
 
     # initialisation the positions tab with random values between gray_min and gray_max
-    position_tab = [[float(randint(gray_min, gray_max)) for i in range(nb_seuil)] for j in range(50)]
+    position_tab = [initialise_position(nb_seuil, gray_min, gray_max) for j in range(50)]
     # initialisation velocity tab with zeros
     velocity_tab = [[0.0 for i in range(nb_seuil)] for j in range(50)]
     best_position_tab = []
@@ -83,6 +95,7 @@ def pso(image, nb_region):
     # define an shortcut for gini_entropy
     def ge(pixel_tab):
         return gini_entropy.gini_entropy(image, pixel_tab, gray_min, gray_max)
+
     """
     # function that finds the best position in the whole swarm
     def g_best_finder(ptab, indice):
@@ -99,10 +112,14 @@ def pso(image, nb_region):
         return el
     """
     # algorithm  iterations:
+    # calculate initial value of g_best
     g_best = position_tab[0]
-    for i in range(1,len(position_tab)):
-        if position_tab[i] < g_best:
+    gini_g_best = ge(position_tab[0])
+    for i in range(1, len(position_tab)):
+        p_i_best = ge(position_tab[i])
+        if p_i_best < gini_g_best:
             g_best = position_tab[i]
+            gini_g_best = p_i_best
     k = 0  # iteration init on 0
     psnr_value = 0
 
@@ -131,30 +148,36 @@ def pso(image, nb_region):
                 # test if this is the first seuil
                 if j == 0:
                     if position_tab[i][j] >= position_tab[i][j + 1]:  # test if its above the next seuil
-                        position_tab[i][j] = position_tab[i][j+1] /2
-                    elif position_tab[i][j] < gray_min:  # test if it's below the gray_min
-                        position_tab[i][j] = gray_min
+                        position_tab[i][j] = position_tab[i][j + 1] / 2
+                    elif position_tab[i][j] <= gray_min:  # test if it's below the gray_min
+                        position_tab[i][j] = (gray_min + position_tab[i][j + 1]) / 2
                 # test if this is the last seuil
-                elif j == nb_seuil - 1:
-                    if position_tab[i][j] <= position_tab[i][j - 1]:  # test if it's below previous seuil
-                        position_tab[i][j] = (position_tab[i][j - 1] + gray_max)/2
-                    elif position_tab[i][j] > gray_max:  # test if it's above the gray_max
-                        position_tab[i][j] = gray_max
+                elif j == (nb_seuil - 1):
+                    # test if it's below previous seuil
+                    if position_tab[i][j] <= position_tab[i][j - 1] or position_tab[i][j] >= gray_max:
+                        position_tab[i][j] = (position_tab[i][j - 1] + gray_max) / 2
                 # if it's seuil in the middle of the particle we test if it's between the previous and the next sueil
                 else:
-                    position_tab[i][j] = (position_tab[i][j-1] + position_tab[i][j+1]) /2
+                    position_tab[i][j] = (position_tab[i][j - 1] + position_tab[i][j + 1]) / 2
 
             # update the new personal best position
-            if ge(position_tab[i]) < ge(best_position_tab[i]):
+            p_i_best = ge(best_position_tab[i])
+            p_i = ge(position_tab[i])
+            if p_i < p_i_best:
                 best_position_tab[i] = position_tab[i]
+                p_i_best = p_i
                 # update the new g_best position if the personal best position is better than g_best
-                if ge(best_position_tab[i]) < ge(g_best):
+                if p_i_best < gini_g_best:
                     g_best = best_position_tab[i]
+                    gini_g_best = p_i_best
 
         print(k)
     # we pick the optimum solution from the gbest tab
+    if nb_seuil == 1:
+        g_best = [g_best[0]]
     optimum = [gray_min] + g_best + [gray_max]
     print(optimum)
+    print("--- %s seconds ---" % (time.time() - start_time))
     draw_image(image, optimum)
     # algorithm ended
     print(k)
@@ -166,4 +189,3 @@ def pso(image, nb_region):
 
 
 pso(im_gray, 5)
-
