@@ -8,18 +8,18 @@ import cv2
 import math
 import gini_entropy
 
-im_gray = cv2.imread("sources/brain.png", cv2.IMREAD_GRAYSCALE)
+im_gray = cv2.imread("sources/oiseaux.jpeg", cv2.IMREAD_GRAYSCALE)
 
 imageTest = [[122, 233, 213], [112, 33, 32], [13, 41, 24]]
 matrix1 = [[7, 8, 9], [4, 5, 6], [1, 2, 3]]
 imageTest2 = [[121, 232, 223], [112, 13, 32], [33, 42, 64]]
 
-colors = []
-colors += [[0, 128, 255]]  # orange
+colors = [[33, 101, 100]]
+colors += [[0, 0, 255]]  # red
 colors += [[0, 255, 255]]  # yellow
 colors += [[0, 255, 0]]  # green
 colors += [[255, 0, 0]]  # blue
-colors += [[0, 0, 255]]  # red
+colors += [[0, 128, 255]]  # orange
 colors += [[255, 149, 0]]
 colors += [[65, 149, 33]]
 colors += [[255, 228, 196]]
@@ -36,7 +36,7 @@ def draw_image(image, tab):
                 if tab[k - 1] <= image[i][j] <= tab[k]:
                     colored_image[i][j] = colors[k]
     cv2.imshow("image segmentée tata !", colored_image)
-    cv2.imwrite("sources/brain4.png", colored_image)
+    cv2.imwrite("sources/parrots.png", colored_image)
     cv2.waitKey()
 
 
@@ -85,6 +85,7 @@ def pso(image, nb_region):
     position_tab = [initialise_position(nb_seuil, gray_min, gray_max) for j in range(50)]
     # initialisation velocity tab with zeros
     velocity_tab = [[0.0 for i in range(nb_seuil)] for j in range(50)]
+    p_best_gini_tab = []
     best_position_tab = []
     # initialising best position tab with position tab values
     for element in position_tab:
@@ -115,16 +116,18 @@ def pso(image, nb_region):
     # calculate initial value of g_best
     g_best = position_tab[0]
     gini_g_best = ge(position_tab[0])
+    p_best_gini_tab = [gini_g_best]
     for i in range(1, len(position_tab)):
-        p_i_best = ge(position_tab[i])
-        if p_i_best < gini_g_best:
+        p_best_gini_tab += [ge(position_tab[i])]
+        if p_best_gini_tab[i] < gini_g_best:
             g_best = position_tab[i]
-            gini_g_best = p_i_best
+            gini_g_best = p_best_gini_tab[i]
     k = 0  # iteration init on 0
     psnr_value = 0
-
+    print("iterations just started")
     # do until psnr index is above 30db or we did a lot of iteration to avoid infinity loop
-    for k in range(10):
+    for k in range(5):
+        print(g_best)
         # psnr_value = psnr(image, best_position_tab)
         for i in range(nb_col):
             #  g_best_tab[i] = g_best_finder(position_tab, i)  # find g_best around the particle i,j
@@ -161,15 +164,15 @@ def pso(image, nb_region):
                     position_tab[i][j] = (position_tab[i][j - 1] + position_tab[i][j + 1]) / 2
 
             # update the new personal best position
-            p_i_best = ge(best_position_tab[i])
+
             p_i = ge(position_tab[i])
-            if p_i < p_i_best:
+            if p_i < p_best_gini_tab[i]:
                 best_position_tab[i] = position_tab[i]
-                p_i_best = p_i
+                p_best_gini_tab[i] = p_i
                 # update the new g_best position if the personal best position is better than g_best
-                if p_i_best < gini_g_best:
+                if p_best_gini_tab[i] < gini_g_best:
                     g_best = best_position_tab[i]
-                    gini_g_best = p_i_best
+                    gini_g_best = p_best_gini_tab[i]
 
         print(k)
     # we pick the optimum solution from the gbest tab
@@ -188,4 +191,4 @@ def pso(image, nb_region):
     # cv2.waitKey()
 
 
-pso(im_gray, 5)
+pso(im_gray, 6)
