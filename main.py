@@ -7,8 +7,9 @@ import time
 import cv2
 import math
 import gini_entropy
+import matplotlib.pyplot as plt
 
-im_gray = cv2.imread("sources/oiseaux.jpeg", cv2.IMREAD_GRAYSCALE)
+im_gray = cv2.imread("sources/Cameraman256.png", cv2.IMREAD_GRAYSCALE)
 
 imageTest = [[122, 233, 213], [112, 33, 32], [13, 41, 24]]
 matrix1 = [[7, 8, 9], [4, 5, 6], [1, 2, 3]]
@@ -23,7 +24,11 @@ colors += [[0, 128, 255]]  # orange
 colors += [[255, 149, 0]]
 colors += [[65, 149, 33]]
 colors += [[255, 228, 196]]
-colors += [[201, 85, 0]]
+colors += [[241, 15, 5]]
+colors += [[11, 65, 33]]
+colors += [[21, 85, 102]]
+colors += [[211, 15, 200]]
+colors += [[139, 85, 100]]
 
 
 def draw_image(image, tab):
@@ -35,16 +40,27 @@ def draw_image(image, tab):
             for j in range(nb_col):
                 if tab[k - 1] <= image[i][j] <= tab[k]:
                     colored_image[i][j] = colors[k]
-    cv2.imshow("image segmentée tata !", colored_image)
-    cv2.imwrite("sources/parrots.png", colored_image)
+    cv2.imshow("image segmentee tata !", colored_image)
+    # cv2.imwrite("sources/camera2reg.png", colored_image)
     cv2.waitKey()
 
 
 def initialise_position(length, min_value, max_value):
-    position = [min_value, max_value]
-    for i in range(length - 2):
-        position.insert(1, float(randint(min_value, int(position[1]))))
-    return position
+    position = []
+    new_max = max_value
+    for i in range(length):
+        a = (int(min_value) + int(new_max)) // 2
+        b = int(math.ceil(new_max))
+        if a >= b:
+            c = a
+            a = b
+            b = c
+
+        value = randint(a, b)
+        position.insert(0, value)
+        new_max = position[0]
+
+    return [min_value] + position + [max_value]
 
 
 # psnr function (peak signal to noise ratio)
@@ -59,6 +75,13 @@ def psnr(initial_image, end_image):
     if mse == 0:
         return 0
     return 20 * math.log10(255) - 10 * math.log10(mse)  # psnr value
+
+
+# plot function
+def plot_convergence(tab):
+    plt.plot(tab,"ro")
+    plt.ylabel('gini best')
+    plt.show()
 
 
 def pso(image, nb_region):
@@ -87,6 +110,7 @@ def pso(image, nb_region):
     velocity_tab = [[0.0 for i in range(nb_seuil)] for j in range(50)]
     p_best_gini_tab = []
     best_position_tab = []
+    optimum_iterations_tab = []  # table of gini best of every iteration
     # initialising best position tab with position tab values
     for element in position_tab:
         best_position_tab += [element]
@@ -126,7 +150,7 @@ def pso(image, nb_region):
     psnr_value = 0
     print("iterations just started")
     # do until psnr index is above 30db or we did a lot of iteration to avoid infinity loop
-    for k in range(5):
+    for k in range(7):
         print(g_best)
         # psnr_value = psnr(image, best_position_tab)
         for i in range(nb_col):
@@ -173,9 +197,10 @@ def pso(image, nb_region):
                 if p_best_gini_tab[i] < gini_g_best:
                     g_best = best_position_tab[i]
                     gini_g_best = p_best_gini_tab[i]
-
+        optimum_iterations_tab += [gini_g_best]
         print(k)
     # we pick the optimum solution from the gbest tab
+    plot_convergence(optimum_iterations_tab)
     if nb_seuil == 1:
         g_best = [g_best[0]]
     optimum = [gray_min] + g_best + [gray_max]
@@ -191,4 +216,6 @@ def pso(image, nb_region):
     # cv2.waitKey()
 
 
-pso(im_gray, 6)
+pso(im_gray, 5)
+
+
