@@ -86,8 +86,7 @@ def segmenter():
 runButton = Button(root, text="Segmenter", padx=30,  command=segmenter)
 runButton.pack()
 runButton.place(x=600, y=450)
-
-#psoAlgo.pso(file_path, int(entreeReg.get()), int(entreeIter.get())
+#PsoAlgo.pso(file_path, int(entreeReg.get()), int(entreeIter.get())
 root.title("Segmentation des images")
 root.geometry("900x500")
 root.mainloop()
