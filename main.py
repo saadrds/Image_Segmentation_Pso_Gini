@@ -1,221 +1,93 @@
-# This is a sample Python script.
-
-# Press Maj+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-from random import *
-import time
-import cv2
-import math
-import gini_entropy
-import matplotlib.pyplot as plt
-
-im_gray = cv2.imread("sources/Cameraman256.png", cv2.IMREAD_GRAYSCALE)
-
-imageTest = [[122, 233, 213], [112, 33, 32], [13, 41, 24]]
-matrix1 = [[7, 8, 9], [4, 5, 6], [1, 2, 3]]
-imageTest2 = [[121, 232, 223], [112, 13, 32], [33, 42, 64]]
-
-colors = [[33, 101, 100]]
-colors += [[0, 0, 255]]  # red
-colors += [[0, 255, 255]]  # yellow
-colors += [[0, 255, 0]]  # green
-colors += [[255, 0, 0]]  # blue
-colors += [[0, 128, 255]]  # orange
-colors += [[255, 149, 0]]
-colors += [[65, 149, 33]]
-colors += [[255, 228, 196]]
-colors += [[241, 15, 5]]
-colors += [[11, 65, 33]]
-colors += [[21, 85, 102]]
-colors += [[211, 15, 200]]
-colors += [[139, 85, 100]]
+import string
+from tkinter import *
+from tkinter import filedialog
+import os
+import tkinter as tk
+from PIL import Image, ImageTk
+import psoAlgo
 
 
-def draw_image(image, tab):
-    nb_lines = len(image)
-    nb_col = len(image[0])
-    colored_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    for k in range(1, len(tab)):
-        for i in range(nb_lines):
-            for j in range(nb_col):
-                if tab[k - 1] <= image[i][j] <= tab[k]:
-                    colored_image[i][j] = colors[k]
-    cv2.imshow("image segmentee tata !", colored_image)
-    # cv2.imwrite("sources/camera2reg.png", colored_image)
-    cv2.waitKey()
+file_path = "1"
 
 
-def initialise_position(length, min_value, max_value):
-    position = []
-    new_max = max_value
-    for i in range(length):
-        a = (int(min_value) + int(new_max)) // 2
-        b = int(math.ceil(new_max))
-        if a >= b:
-            c = a
-            a = b
-            b = c
-
-        value = randint(a, b)
-        position.insert(0, value)
-        new_max = position[0]
-
-    return [min_value] + position + [max_value]
+def showImage():
+    fln = filedialog.askopenfilename(initialdir=os.getcwd(), title="select Image",filetypes=(("ALL Files", "*.*"), ("JPG File", "*.jpg"), ("PNG File", "*.png")))
+    global file_path
+    file_path = fln
+    img = Image.open(fln)
+    img.thumbnail((350, 350))
+    img = ImageTk.PhotoImage(img)
+    lbl.configure(image=img)
+    lbl.image = img
+    lbl.place(x=60, y=60)
+    return fln
 
 
-# psnr function (peak signal to noise ratio)
-def psnr(initial_image, end_image):
-    mse = 0  # mean square error
-    m = len(initial_image)
-    n = len(initial_image[0])
-    for i in range(m):
-        for j in range(n):
-            mse += pow(initial_image[i][j] - end_image[i][j], 2)
-    mse = mse / (m * n)
-    if mse == 0:
-        return 0
-    return 20 * math.log10(255) - 10 * math.log10(mse)  # psnr value
+root = Tk()
+root.geometry("1000x1000")
+
+frame1 = Frame(root, width=460, height=500, highlightbackground="Black", highlightthickness=5)
+frame1.place(x=0, y=0)
+frame2 = Frame(root, width=450, height=500, highlightbackground="Black", highlightthickness=5)
+frame2.place(x=450, y=0)
+
+# label
+labelReg = Label(root, text="Entrez le nombre de regions : ", bg="yellow")
+labelReg.place(x=60, y=420)
+entreeReg = Entry(root, textvariable=int, width=30)
+entreeReg.pack(side=tk.LEFT)
+entreeReg.place(x=250, y=390)
+# entrée
+
+entreeIter = Entry(root, textvariable=int, width=30)
+entreeIter.pack(side=tk.LEFT)
+entreeIter.place(x=250, y=420)
+labelReg = Label(root, text="Entrez le nombre d'iterations : ", bg="yellow")
+labelReg.place(x=60, y=390)
 
 
-# plot function
-def plot_convergence(tab):
-    plt.plot(tab,"ro")
-    plt.ylabel('gini best')
-    plt.show()
+lbl=Label(root)
+lbl.pack()
+lbl1=Label(root)
+lbl1.pack()
 
 
-def pso(image, nb_region):
-    start_time = time.time()
-    # variables and parameters initialisations
-    nb_seuil = nb_region - 1
-    nb_col = 50
-    w = 0.9
-    phi1 = 2
-    phi2 = 2.05
-    phi = phi1 + phi2
-    # initialisation of matrix positions and velocity (search space)
-    gray_max = 0
-    gray_min = 255
-    # looking for the border values gray_max and gray_min
-    for i in range(len(image)):
-        for j in range(len(image[0])):
-            if image[i][j] > gray_max:
-                gray_max = image[i][j]
-            if image[i][j] < gray_min:
-                gray_min = image[i][j]
+browserButton = Button(root, text="Browser Image", padx=30, command=showImage)
+browserButton.pack(side=tk.LEFT)
+browserButton.place(x=100, y=450)
 
-    # initialisation the positions tab with random values between gray_min and gray_max
-    position_tab = [initialise_position(nb_seuil, gray_min, gray_max) for j in range(50)]
-    # initialisation velocity tab with zeros
-    velocity_tab = [[0.0 for i in range(nb_seuil)] for j in range(50)]
-    p_best_gini_tab = []
-    best_position_tab = []
-    optimum_iterations_tab = []  # table of gini best of every iteration
-    # initialising best position tab with position tab values
-    for element in position_tab:
-        best_position_tab += [element]
+exitButton = Button(root, text="Exit", padx=30,  command=lambda: exit())
+exitButton.pack()
+exitButton.place(x=260, y=450)
 
-    # initialisation ended
-
-    # define an shortcut for gini_entropy
-    def ge(pixel_tab):
-        return gini_entropy.gini_entropy(image, pixel_tab, gray_min, gray_max)
-
-    """
-    # function that finds the best position in the whole swarm
-    def g_best_finder(ptab, indice):
-        neighbours = []
-        # collect the neighbours of the particle i j
-        for k in range(indice - 1, indice + 2):
-            if k not in (-1, len(ptab)):
-                neighbours += [ptab[k]]
-        # looking for g_best in the population
-        gbest = neighbours[0]
-        for el in neighbours:
-            if ge(gbest) < ge(element):
-                gbest = element
-        return el
-    """
-    # algorithm  iterations:
-    # calculate initial value of g_best
-    g_best = position_tab[0]
-    gini_g_best = ge(position_tab[0])
-    p_best_gini_tab = [gini_g_best]
-    for i in range(1, len(position_tab)):
-        p_best_gini_tab += [ge(position_tab[i])]
-        if p_best_gini_tab[i] < gini_g_best:
-            g_best = position_tab[i]
-            gini_g_best = p_best_gini_tab[i]
-    k = 0  # iteration init on 0
-    psnr_value = 0
-    print("iterations just started")
-    # do until psnr index is above 30db or we did a lot of iteration to avoid infinity loop
-    for k in range(7):
-        print(g_best)
-        # psnr_value = psnr(image, best_position_tab)
-        for i in range(nb_col):
-            #  g_best_tab[i] = g_best_finder(position_tab, i)  # find g_best around the particle i,j
-            w = 2 / abs(2 - phi - math.sqrt(phi * (phi - 4)))  # calculating the inert
-            c1 = phi1 * w  # calculating momentum coefficient 1
-            c2 = phi2 * w  # calculating momentum coefficient 2
-            # calculate new velocity
-            for j in range(nb_seuil):
-                velocity_tab[i][j] = w * velocity_tab[i][j] + (
-                        c1 * random() * (best_position_tab[i][j] - position_tab[i][j])) + (
-                                             c2 * random() * (g_best[j] - position_tab[i][j]))
-                if velocity_tab[i][j] > 3:  # test if the velocity limit is beyond 3
-                    velocity_tab[i][j] = 3
-                elif velocity_tab[i][j] < -3:  # test if the velocity limit is below -3
-                    velocity_tab[i][j] = -3
-
-                # calculate new position
-                position_tab[i][j] += velocity_tab[i][j]
-                # now checking if the position is in the good borders
-
-                # test if this is the first seuil
-                if j == 0:
-                    if position_tab[i][j] >= position_tab[i][j + 1]:  # test if its above the next seuil
-                        position_tab[i][j] = position_tab[i][j + 1] / 2
-                    elif position_tab[i][j] <= gray_min:  # test if it's below the gray_min
-                        position_tab[i][j] = (gray_min + position_tab[i][j + 1]) / 2
-                # test if this is the last seuil
-                elif j == (nb_seuil - 1):
-                    # test if it's below previous seuil
-                    if position_tab[i][j] <= position_tab[i][j - 1] or position_tab[i][j] >= gray_max:
-                        position_tab[i][j] = (position_tab[i][j - 1] + gray_max) / 2
-                # if it's seuil in the middle of the particle we test if it's between the previous and the next sueil
-                else:
-                    position_tab[i][j] = (position_tab[i][j - 1] + position_tab[i][j + 1]) / 2
-
-            # update the new personal best position
-
-            p_i = ge(position_tab[i])
-            if p_i < p_best_gini_tab[i]:
-                best_position_tab[i] = position_tab[i]
-                p_best_gini_tab[i] = p_i
-                # update the new g_best position if the personal best position is better than g_best
-                if p_best_gini_tab[i] < gini_g_best:
-                    g_best = best_position_tab[i]
-                    gini_g_best = p_best_gini_tab[i]
-        optimum_iterations_tab += [gini_g_best]
-        print(k)
-    # we pick the optimum solution from the gbest tab
-    plot_convergence(optimum_iterations_tab)
-    if nb_seuil == 1:
-        g_best = [g_best[0]]
-    optimum = [gray_min] + g_best + [gray_max]
-    print(optimum)
-    print("--- %s seconds ---" % (time.time() - start_time))
-    draw_image(image, optimum)
-    # algorithm ended
-    print(k)
-    print("optimum : ", optimum)
-
-    # new_image = numpy.array(best_position_tab)
-    # cv2.imshow("image", new_image)
-    # cv2.waitKey()
+labelReg = Label(root, text="")
+labelReg.place(x=660, y=420)
 
 
-pso(im_gray, 5)
+def segmenter():
+    global labelReg
+    labelReg = Label(root, text="loading", bg="red")
+    labelReg.place(x=580, y=400)
+    [optimum, img_path] = psoAlgo.pso(file_path,int(entreeReg.get()),int(entreeIter.get()))
+    img = Image.open(img_path)
+    img.thumbnail((350, 350))
+    img = ImageTk.PhotoImage(img)
+    lbl1.configure(image=img)
+    lbl1.image = img
+    lbl1.place(x=560, y=60)
+    mystr = "Optimum est : [ "
+    for i in range(len(optimum)):
+        mystr += str(optimum[i]) + ", "
+    mystr += "]"
+    labelReg = Label(root, text=mystr, bg="red")
+    labelReg.place(x=560, y=400)
 
 
+runButton = Button(root, text="Segmenter", padx=30,  command=segmenter)
+runButton.pack()
+runButton.place(x=600, y=450)
+
+#psoAlgo.pso(file_path, int(entreeReg.get()), int(entreeIter.get())
+root.title("Segmentation des images")
+root.geometry("900x500")
+root.mainloop()
