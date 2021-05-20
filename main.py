@@ -68,7 +68,7 @@ def segmenter():
     global labelReg
     labelReg = Label(root, text="loading", bg="red")
     labelReg.place(x=580, y=400)
-    [optimum, img_path] = psoAlgo.pso(file_path,int(entreeReg.get()),int(entreeIter.get()))
+    [optimum, img_path] = psoAlgo.pso(file_path,int(entreeIter.get()),int(entreeReg.get()))
     img = Image.open(img_path)
     img.thumbnail((350, 350))
     img = ImageTk.PhotoImage(img)
@@ -76,9 +76,9 @@ def segmenter():
     lbl1.image = img
     lbl1.place(x=560, y=60)
     mystr = "Optimum est : [ "
-    for i in range(len(optimum)):
+    for i in range(len(optimum) - 1):
         mystr += str(optimum[i]) + ", "
-    mystr += "]"
+    mystr += str(optimum[len(optimum)]) + "]"
     labelReg = Label(root, text=mystr, bg="red")
     labelReg.place(x=560, y=400)
 
