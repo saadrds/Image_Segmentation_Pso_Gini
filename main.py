@@ -84,7 +84,11 @@ def segmenter(i):
 
 def background(func, args):
     th = threading.Thread(target=func, args=args)
-    th.start()
+    try:
+        th.daemon = True
+        th.start()
+    except (KeyboardInterrupt, SystemExit):
+        exit()
 
 
 runButton = Button(root, text="Segmenter", padx=30, command=lambda: background(segmenter, (50,)))
@@ -93,4 +97,5 @@ runButton.place(x=600, y=450)
 # PsoAlgo.pso(file_path, int(entreeReg.get()), int(entreeIter.get())
 root.title("Segmentation des images")
 root.geometry("900x500")
+root.resizable(width=False, height=False)
 root.mainloop()
