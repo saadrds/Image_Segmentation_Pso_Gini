@@ -5,13 +5,14 @@ import os
 import tkinter as tk
 from PIL import Image, ImageTk
 import psoAlgo
-
+import threading
 
 file_path = "1"
 
 
 def showImage():
-    fln = filedialog.askopenfilename(initialdir=os.getcwd(), title="select Image",filetypes=(("ALL Files", "*.*"), ("JPG File", "*.jpg"), ("PNG File", "*.png")))
+    fln = filedialog.askopenfilename(initialdir=os.getcwd(), title="select Image",
+                                     filetypes=(("ALL Files", "*.*"), ("JPG File", "*.jpg"), ("PNG File", "*.png")))
     global file_path
     file_path = fln
     img = Image.open(fln)
@@ -45,18 +46,16 @@ entreeIter.place(x=250, y=420)
 labelReg = Label(root, text="Entrez le nombre d'iterations : ", bg="yellow")
 labelReg.place(x=60, y=390)
 
-
-lbl=Label(root)
+lbl = Label(root)
 lbl.pack()
-lbl1=Label(root)
+lbl1 = Label(root)
 lbl1.pack()
-
 
 browserButton = Button(root, text="Browser Image", padx=30, command=showImage)
 browserButton.pack(side=tk.LEFT)
 browserButton.place(x=100, y=450)
 
-exitButton = Button(root, text="Exit", padx=30,  command=lambda: exit())
+exitButton = Button(root, text="Exit", padx=30, command=lambda: exit())
 exitButton.pack()
 exitButton.place(x=260, y=450)
 
@@ -64,11 +63,11 @@ labelReg = Label(root, text="")
 labelReg.place(x=660, y=420)
 
 
-def segmenter():
+def segmenter(i):
     global labelReg
     labelReg = Label(root, text="loading", bg="red")
     labelReg.place(x=580, y=400)
-    [optimum, img_path] = psoAlgo.pso(file_path,int(entreeIter.get()),int(entreeReg.get()))
+    [optimum, img_path] = psoAlgo.pso(file_path, int(entreeIter.get()), int(entreeReg.get()))
     img = Image.open(img_path)
     img.thumbnail((350, 350))
     img = ImageTk.PhotoImage(img)
@@ -78,15 +77,20 @@ def segmenter():
     mystr = "Optimum est : [ "
     for i in range(len(optimum) - 1):
         mystr += str(optimum[i]) + ", "
-    mystr += str(optimum[len(optimum)]) + "]"
+    mystr += str(optimum[len(optimum) - 1]) + "]"
     labelReg = Label(root, text=mystr, bg="red")
     labelReg.place(x=560, y=400)
 
 
-runButton = Button(root, text="Segmenter", padx=30,  command=segmenter)
+def background(func, args):
+    th = threading.Thread(target=func, args=args)
+    th.start()
+
+
+runButton = Button(root, text="Segmenter", padx=30, command=lambda: background(segmenter, (50,)))
 runButton.pack()
 runButton.place(x=600, y=450)
-#PsoAlgo.pso(file_path, int(entreeReg.get()), int(entreeIter.get())
+# PsoAlgo.pso(file_path, int(entreeReg.get()), int(entreeIter.get())
 root.title("Segmentation des images")
 root.geometry("900x500")
 root.mainloop()

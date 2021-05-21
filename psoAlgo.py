@@ -42,7 +42,7 @@ def draw_image(image, tab):
 def initialise_position(length, min_value, max_value):
     position = []
     new_max = max_value
-    for i in range(length):
+    for i in range(length-2):
         a = (int(min_value) + int(new_max)) // 2
         b = int(math.ceil(new_max))
         if a >= b:
