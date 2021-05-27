@@ -78,7 +78,7 @@ def plot_convergence(tab):
     plt.show()
 
 
-def pso(path_image, nb_region, nb_iteration):
+def pso(path_image, nb_region, nb_iteration,progress):
     image = cv2.imread(path_image, cv2.IMREAD_GRAYSCALE)
     start_time = time.time()
     # variables and parameters initialisations
@@ -143,6 +143,7 @@ def pso(path_image, nb_region, nb_iteration):
             gini_g_best = p_best_gini_tab[i]
     k = 0  # iteration init on 0
     psnr_value = 0
+    progress['value'] = 0
     print("iterations just started")
     # do until psnr index is above 30db or we did a lot of iteration to avoid infinity loop
     for k in range(nb_iteration):
@@ -193,11 +194,12 @@ def pso(path_image, nb_region, nb_iteration):
                     g_best = best_position_tab[i]
                     gini_g_best = p_best_gini_tab[i]
         optimum_iterations_tab += [gini_g_best]
+        progress['value'] = (k + 1) * 100 / nb_iteration
         print(k)
     # we pick the optimum solution from the gbest tab
     plot_convergence(optimum_iterations_tab)
     if nb_seuil == 1:
-        g_best = [g_best[0]]
+        g_best = [g_best[1]]
     optimum = [gray_min] + g_best + [gray_max]
     print(optimum)
     print("--- %s seconds ---" % (time.time() - start_time))

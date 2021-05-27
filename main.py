@@ -3,6 +3,8 @@ from tkinter import *
 from tkinter import filedialog
 import os
 import tkinter as tk
+from tkinter.ttk import Progressbar
+
 from PIL import Image, ImageTk
 import psoAlgo
 import threading
@@ -67,7 +69,7 @@ def segmenter(i):
     global labelReg
     labelReg = Label(root, text="loading", bg="red")
     labelReg.place(x=580, y=400)
-    [optimum, img_path] = psoAlgo.pso(file_path, int(entreeIter.get()), int(entreeReg.get()))
+    [optimum, img_path] = psoAlgo.pso(file_path, int(entreeIter.get()), int(entreeReg.get()), progress)
     img = Image.open(img_path)
     img.thumbnail((350, 350))
     img = ImageTk.PhotoImage(img)
@@ -91,7 +93,41 @@ def background(func, args):
         exit()
 
 
-runButton = Button(root, text="Segmenter", padx=30, command=lambda: background(segmenter, (50,)))
+# Progress bar widget
+progress = Progressbar(root, orient=HORIZONTAL,
+                       length=100, mode='determinate')
+
+
+# Function responsible for the updation
+# of the progress bar value
+def bar():
+    import time
+    progress['value'] = 20
+    root.update_idletasks()
+    time.sleep(1)
+
+    progress['value'] = 40
+    root.update_idletasks()
+    time.sleep(1)
+
+    progress['value'] = 50
+    root.update_idletasks()
+    time.sleep(1)
+
+    progress['value'] = 60
+    root.update_idletasks()
+    time.sleep(1)
+
+    progress['value'] = 80
+    root.update_idletasks()
+    time.sleep(1)
+    progress['value'] = 100
+
+
+progress.pack(pady=10)
+
+
+runButton = Button(root, text="Segmenter", padx=30, command=lambda: background(segmenter, (progress,)))
 runButton.pack()
 runButton.place(x=600, y=450)
 # PsoAlgo.pso(file_path, int(entreeReg.get()), int(entreeIter.get())
@@ -100,4 +136,5 @@ root.geometry("900x500")
 root.resizable(width=False, height=False)
 photo = PhotoImage(file = "sources/Cameraman256.png")
 root.iconphoto(False, photo)
+root.configure(background='black')
 root.mainloop()
