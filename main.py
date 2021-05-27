@@ -95,7 +95,7 @@ def background(func, args):
 
 # Progress bar widget
 progress = Progressbar(root, orient=HORIZONTAL,
-                       length=100, mode='determinate')
+                       length=190, mode='determinate')
 
 
 # Function responsible for the updation
@@ -124,8 +124,7 @@ def bar():
     progress['value'] = 100
 
 
-progress.pack(pady=10)
-
+progress.place(x=570, y=420)
 
 runButton = Button(root, text="Segmenter", padx=30, command=lambda: background(segmenter, (progress,)))
 runButton.pack()
