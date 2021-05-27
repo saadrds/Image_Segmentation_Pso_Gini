@@ -42,7 +42,11 @@ def draw_image(image, tab):
 def initialise_position(length, min_value, max_value):
     position = []
     new_max = max_value
+    print("length : ", length)
+    if length == 1:
+        length = 3
     for i in range(length-2):
+        print("executed")
         a = (int(min_value) + int(new_max)) // 2
         b = int(math.ceil(new_max))
         if a >= b:
@@ -199,7 +203,7 @@ def pso(path_image, nb_region, nb_iteration,progress):
     # we pick the optimum solution from the gbest tab
     plot_convergence(optimum_iterations_tab)
     if nb_seuil == 1:
-        g_best = [g_best[1]]
+        g_best = [g_best[0]]
     optimum = [gray_min] + g_best + [gray_max]
     print(optimum)
     print("--- %s seconds ---" % (time.time() - start_time))

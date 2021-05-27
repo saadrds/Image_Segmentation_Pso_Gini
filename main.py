@@ -1,15 +1,16 @@
 import string
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 import os
 import tkinter as tk
 from tkinter.ttk import Progressbar
-
 from PIL import Image, ImageTk
 import psoAlgo
 import threading
 
 file_path = "1"
+
+
 
 
 def showImage():
@@ -29,9 +30,11 @@ def showImage():
 root = Tk()
 root.geometry("1000x1000")
 
-frame1 = Frame(root, width=460, height=500, highlightbackground="Black", highlightthickness=5)
+frame1 = Frame(root, width=500, height=500, highlightbackground="Black", highlightthickness=3)
+frame1.configure(background='#6d67ca')
 frame1.place(x=0, y=0)
-frame2 = Frame(root, width=450, height=500, highlightbackground="Black", highlightthickness=5)
+frame2 = Frame(root, width=500, height=500, highlightbackground="Black", highlightthickness=3)
+frame2.configure(background='#6d67ca')
 frame2.place(x=450, y=0)
 
 # label
@@ -52,12 +55,17 @@ lbl = Label(root)
 lbl.pack()
 lbl1 = Label(root)
 lbl1.pack()
-
-browserButton = Button(root, text="Browser Image", padx=30, command=showImage)
+s = ttk.Style()
+s.configure('TButton', font = ('calibri', 10, 'bold', 'underline'),foreground = 'red')
+s.map('TButton',
+    background=[('disabled','#d9d9d9'), ('active','#ececec')],
+    foreground=[('disabled','#a3a3a3')],
+    relief=[('pressed', '!disabled', 'sunken')])
+browserButton = ttk.Button(root, text="Browser Image", command=showImage)
 browserButton.pack(side=tk.LEFT)
 browserButton.place(x=100, y=450)
 
-exitButton = Button(root, text="Exit", padx=30, command=lambda: exit())
+exitButton = ttk.Button(root, text="Exit", command=root.destroy)
 exitButton.pack()
 exitButton.place(x=260, y=450)
 
@@ -97,43 +105,16 @@ def background(func, args):
 progress = Progressbar(root, orient=HORIZONTAL,
                        length=190, mode='determinate')
 
-
-# Function responsible for the updation
-# of the progress bar value
-def bar():
-    import time
-    progress['value'] = 20
-    root.update_idletasks()
-    time.sleep(1)
-
-    progress['value'] = 40
-    root.update_idletasks()
-    time.sleep(1)
-
-    progress['value'] = 50
-    root.update_idletasks()
-    time.sleep(1)
-
-    progress['value'] = 60
-    root.update_idletasks()
-    time.sleep(1)
-
-    progress['value'] = 80
-    root.update_idletasks()
-    time.sleep(1)
-    progress['value'] = 100
-
-
 progress.place(x=570, y=420)
 
-runButton = Button(root, text="Segmenter", padx=30, command=lambda: background(segmenter, (progress,)))
+runButton = ttk.Button(root, text="Segmenter", command=lambda: background(segmenter, (progress,)))
 runButton.pack()
 runButton.place(x=600, y=450)
 # PsoAlgo.pso(file_path, int(entreeReg.get()), int(entreeIter.get())
 root.title("Segmentation des images")
 root.geometry("900x500")
 root.resizable(width=False, height=False)
-photo = PhotoImage(file = "sources/Cameraman256.png")
+photo = PhotoImage(file="sources/Cameraman256.png")
 root.iconphoto(False, photo)
 root.configure(background='black')
 root.mainloop()
