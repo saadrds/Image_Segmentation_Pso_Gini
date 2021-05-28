@@ -11,8 +11,6 @@ import threading
 file_path = "1"
 
 
-
-
 def showImage():
     fln = filedialog.askopenfilename(initialdir=os.getcwd(), title="select Image",
                                      filetypes=(("ALL Files", "*.*"), ("JPG File", "*.jpg"), ("PNG File", "*.png")))
@@ -56,30 +54,29 @@ lbl.pack()
 lbl1 = Label(root)
 lbl1.pack()
 s = ttk.Style()
-s.configure('TButton', font = ('calibri', 10, 'bold', 'underline'),foreground = 'red')
+s.configure('TButton', font=('calibri', 10, 'bold', 'underline'), foreground='red')
 s.map('TButton',
-    background=[('disabled','#d9d9d9'), ('active','#ececec')],
-    foreground=[('disabled','#a3a3a3')],
-    relief=[('pressed', '!disabled', 'sunken')])
-browserButton = ttk.Button(root, text="Browser Image", command=showImage)
+      background=[('disabled', '#d9d9d9'), ('active', '#ececec')],
+      foreground=[('disabled', '#a3a3a3')],
+      relief=[('pressed', '!disabled', 'sunken')])
+browserButton = ttk.Button(root, text="Select Image", command=showImage)
 browserButton.pack(side=tk.LEFT)
 browserButton.place(x=290, y=28)
 
 imagefirst = Label(root,
-                  text = "Selectionez une image : ").place(x = 40,
-                                           y = 30)
+                   text="Image Selectionée : ").place(x=40,
+                                                      y=30)
 
 exitButton = ttk.Button(root, text="Exit", command=root.destroy)
 exitButton.pack()
 exitButton.place(x=190, y=450)
 
 
-
 def segmenter(i):
     global labelOpt
     imagefirst = Label(root,
                        text=" Image segmenté  :").place(x=620,
-                                                              y=30)
+                                                        y=30)
     [optimum, img_path] = psoAlgo.pso(file_path, int(entreeIter.get()), int(entreeReg.get()), progress)
     img = Image.open(img_path)
     img.thumbnail((350, 350))
