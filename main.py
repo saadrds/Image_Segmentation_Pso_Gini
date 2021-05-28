@@ -23,7 +23,7 @@ def showImage():
     img = ImageTk.PhotoImage(img)
     lbl.configure(image=img)
     lbl.image = img
-    lbl.place(x=60, y=60)
+    lbl.place(x=60, y=70)
     return fln
 
 
@@ -31,10 +31,10 @@ root = Tk()
 root.geometry("1000x1000")
 
 frame1 = Frame(root, width=500, height=500, highlightbackground="Black", highlightthickness=3)
-frame1.configure(background='#6d67ca')
+frame1.configure(background='#5a94a9')
 frame1.place(x=0, y=0)
 frame2 = Frame(root, width=500, height=500, highlightbackground="Black", highlightthickness=3)
-frame2.configure(background='#6d67ca')
+frame2.configure(background='#5a94a9')
 frame2.place(x=450, y=0)
 
 # label
@@ -63,33 +63,36 @@ s.map('TButton',
     relief=[('pressed', '!disabled', 'sunken')])
 browserButton = ttk.Button(root, text="Browser Image", command=showImage)
 browserButton.pack(side=tk.LEFT)
-browserButton.place(x=100, y=450)
+browserButton.place(x=290, y=28)
+
+imagefirst = Label(root,
+                  text = "Selectionez une image : ").place(x = 40,
+                                           y = 30)
 
 exitButton = ttk.Button(root, text="Exit", command=root.destroy)
 exitButton.pack()
-exitButton.place(x=260, y=450)
+exitButton.place(x=190, y=450)
 
-labelReg = Label(root, text="")
-labelReg.place(x=660, y=420)
 
 
 def segmenter(i):
-    global labelReg
-    labelReg = Label(root, text="loading", bg="red")
-    labelReg.place(x=580, y=400)
+    global labelOpt
+    imagefirst = Label(root,
+                       text=" Image segmenté  :").place(x=620,
+                                                              y=30)
     [optimum, img_path] = psoAlgo.pso(file_path, int(entreeIter.get()), int(entreeReg.get()), progress)
     img = Image.open(img_path)
     img.thumbnail((350, 350))
     img = ImageTk.PhotoImage(img)
     lbl1.configure(image=img)
     lbl1.image = img
-    lbl1.place(x=560, y=60)
+    lbl1.place(x=560, y=70)
     mystr = "Optimum est : [ "
     for i in range(len(optimum) - 1):
         mystr += str(optimum[i]) + ", "
     mystr += str(optimum[len(optimum) - 1]) + "]"
-    labelReg = Label(root, text=mystr, bg="red")
-    labelReg.place(x=560, y=400)
+    labelOpt = Label(root, text=mystr, bg="red")
+    labelOpt.place(x=600, y=365)
 
 
 def background(func, args):
@@ -103,18 +106,17 @@ def background(func, args):
 
 # Progress bar widget
 progress = Progressbar(root, orient=HORIZONTAL,
-                       length=190, mode='determinate')
+                       length=220, mode='determinate')
 
 progress.place(x=570, y=420)
 
 runButton = ttk.Button(root, text="Segmenter", command=lambda: background(segmenter, (progress,)))
 runButton.pack()
-runButton.place(x=600, y=450)
+runButton.place(x=640, y=450)
 # PsoAlgo.pso(file_path, int(entreeReg.get()), int(entreeIter.get())
 root.title("Segmentation des images")
 root.geometry("900x500")
 root.resizable(width=False, height=False)
 photo = PhotoImage(file="sources/Cameraman256.png")
 root.iconphoto(False, photo)
-root.configure(background='black')
 root.mainloop()
